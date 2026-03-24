@@ -1,4 +1,4 @@
-name: Deploy Node JS
+name: Deploy Node JS - v1
 
 on:
   push:
