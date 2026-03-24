@@ -6,6 +6,7 @@ require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const initDb = require('./models/initDb');
 const observationRoutes = require('./routes/observationRoutes');
 const memberRoutes = require('./routes/memberRoutes');
+const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -22,6 +23,7 @@ initDb();
 
 app.use('/api/observations', observationRoutes);
 app.use('/api/members', memberRoutes);
+app.use('/api/auth', authRoutes);
 
 app.get('/health', (req, res) => res.status(200).json({ status: 'OK' }));
 
