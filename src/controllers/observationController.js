@@ -1,19 +1,23 @@
 const pool = require('../config/db');
 
 const getObservations = async (req, res) => {
-  const { days } = req.query;
+  const { days, memberId } = req.query;
   try {
     let query = 'SELECT * FROM observations';
     let params = [];
 
     if (days && days !== 'null' && days !== 'all') {
-      // Usamos un intervalo válido de Postgres
       query += ' WHERE created_at >= NOW() - $1::INTERVAL';
-      params.push(`${days} days`);
+      params.push(days + ' days');
+    }
+
+    if (memberId) {
+      query += (params.length === 0 ? ' WHERE ' : ' AND ') + 'member_id = $' + (params.length + 1);
+      params.push(memberId);
     }
 
     query += ' ORDER BY created_at DESC';
-    
+
     const result = await pool.query(query, params);
     res.status(200).json(result.rows);
   } catch (err) {
@@ -36,7 +40,7 @@ const createObservation = async (req, res) => {
     res.status(201).json(result.rows[0]);
   } catch (err) {
     console.error('Error en createObservation:', err);
-    res.status(500).json({ error: 'Error al crear observación' });
+    res.status(500).json({ error: 'Error al crear observaci�n' });
   }
 };
 

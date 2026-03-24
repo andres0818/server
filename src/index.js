@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config();
+const path = require('path');
+// Carga inicial de dotenv en la raíz
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 const initDb = require('./models/initDb');
 const observationRoutes = require('./routes/observationRoutes');
@@ -8,9 +10,15 @@ const observationRoutes = require('./routes/observationRoutes');
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Verificación rápida de variables de entorno críticas
+if (!process.env.DB_HOST || !process.env.DB_USER) {
+  console.error('❌ ERROR: Variables de entorno DB_HOST o DB_USER no encontradas en .env');
+  process.exit(1);
+}
+
 // Configuración de CORS robusta
 app.use(cors({
-  origin: '*', // Permite peticiones desde cualquier origen en desarrollo
+  origin: '*',
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
