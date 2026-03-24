@@ -1,0 +1,49 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [ main ] # Ajusta la rama según tu configuración
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Copy files to VPS via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          source: "./*"
+          target: "~/server" # Ajusta el directorio destino en tu servidor
+          rm: true # Opcional: Limpia el destino antes de copiar
+
+      - name: Restart Server via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            cd ~/server
+            npm install --production
+            # Reiniciar con PM2 (recomendado) o directamente con npm
+            # pm2 restart server-api || pm2 start src/index.js --name server-api
+            # Si usas npm start directamente (menos recomendado para producción):
+            # pkill -f "src/index.js" || true
+            # nohup npm start > server.log 2>&1 &
