@@ -22,20 +22,34 @@ jobs:
         uses: actions/checkout@v4
 
       # --------------------
-      # Zip dist (Excluyendo archivos innecesarios para un paquete más ligero)
+      # Zip dist
       # --------------------
       - name: Zip project folder
         run: |
-          zip -r ${ZIP_NAME} . -x "node_modules/*" ".git/*" ".env" "test-db.js"
+          # Creamos el zip excluyendo el propio zip, node_modules y otros archivos innecesarios
+          zip -r ${{ env.ZIP_NAME }} . -x "node_modules/*" ".git/*" ".env" "${{ env.ZIP_NAME }}" "test-db.js"
+
+      # --------------------
+      # Verify File
+      # --------------------
+      - name: Verify ZIP existence
+        run: |
+          if [ -f "${{ env.ZIP_NAME }}" ]; then
+            echo "✅ ${{ env.ZIP_NAME }} creado con éxito."
+            ls -lh ${{ env.ZIP_NAME }}
+          else
+            echo "❌ Error: ${{ env.ZIP_NAME }} no se encuentra."
+            exit 1
+          fi
 
       # --------------------
       # Deploy
       # --------------------
       - name: Upload ZIP a LIN Cloud IIS Push
         run: |
-          curl -X POST \
+          curl -v -X POST \
             "$PUBLISH_URL/api/Publish?createRelease=true" \
             -H "accept: text/plain" \
             -H "Content-Type: multipart/form-data" \
             -H "Key: $PUBLISH_KEY" \
-            -F "file=@${ZIP_NAME}"
+            -F "file=@${{ env.ZIP_NAME }}"
