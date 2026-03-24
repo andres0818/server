@@ -44,7 +44,18 @@ const createObservation = async (req, res) => {
   }
 };
 
+const deleteObservation = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query('DELETE FROM observations WHERE id = $1 RETURNING *', [id]);
+    res.status(200).json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: 'Error al eliminar observación' });
+  }
+};
+
 module.exports = {
   getObservations,
-  createObservation
+  createObservation,
+  deleteObservation
 };
