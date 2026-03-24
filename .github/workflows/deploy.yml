@@ -1,9 +1,9 @@
-name: Deploy Node JS - v1
+name: Deploy Node JS
 
 on:
   push:
-    branches: ["main"]
-  workflow_dispatch:
+    branches: [ "main" ]
+  workflow_dispatch: {} # Se añade {} para asegurar compatibilidad con APIs externas
 
 env:
   PUBLISH_URL: ${{ secrets.LIN_CLOUD_URL_240 }}
@@ -15,41 +15,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # --------------------
-      # Checkout
-      # --------------------
       - name: Checkout
         uses: actions/checkout@v4
 
-      # --------------------
-      # Zip dist
-      # --------------------
       - name: Zip project folder
         run: |
-          # Creamos el zip excluyendo el propio zip, node_modules y otros archivos innecesarios
           zip -r ${{ env.ZIP_NAME }} . -x "node_modules/*" ".git/*" ".env" "${{ env.ZIP_NAME }}" "test-db.js"
 
-      # --------------------
-      # Verify File
-      # --------------------
       - name: Verify ZIP existence
         run: |
           if [ -f "${{ env.ZIP_NAME }}" ]; then
-            echo "✅ ${{ env.ZIP_NAME }} creado con éxito."
-            ls -lh ${{ env.ZIP_NAME }}
+            echo "✅ ${{ env.ZIP_NAME }} generado correctamente."
           else
-            echo "❌ Error: ${{ env.ZIP_NAME }} no se encuentra."
+            echo "❌ Error: No se pudo generar el archivo ZIP."
             exit 1
           fi
 
-      # --------------------
-      # Deploy
-      # --------------------
       - name: Upload ZIP a LIN Cloud IIS Push
         run: |
-          curl -v -X POST \
-            "$PUBLISH_URL/api/Publish?createRelease=true" \
+          curl -X POST \
+            "${{ env.PUBLISH_URL }}/api/Publish?createRelease=true" \
             -H "accept: text/plain" \
             -H "Content-Type: multipart/form-data" \
-            -H "Key: $PUBLISH_KEY" \
+            -H "Key: ${{ env.PUBLISH_KEY }}" \
             -F "file=@${{ env.ZIP_NAME }}"
