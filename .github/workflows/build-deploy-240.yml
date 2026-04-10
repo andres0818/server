@@ -22,11 +22,11 @@ jobs:
         uses: actions/checkout@v4
 
       # --------------------
-      # Zip dist
+      # Zip
       # --------------------
-      - name: Zip dist folder
+      - name: Zip folder
         run: |
-          zip -r ../${ZIP_NAME} .
+          zip -r ${ZIP_NAME} .
 
       # --------------------
       # Deploy
